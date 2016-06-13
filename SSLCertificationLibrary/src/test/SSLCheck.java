@@ -222,7 +222,7 @@ public class SSLCheck {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-}
+		}
 	}
 	
 	
