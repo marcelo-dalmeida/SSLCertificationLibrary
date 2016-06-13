@@ -54,9 +54,9 @@ public class SSLCheck {
 		//To get the server certificate in the first place in order to do the verification manually, 
 		//irrespectively of whether it's valid or not, the easiest is to connect via an SSLSocket 
 		//after having disabled any certificate verification.
-
+		
 		//Create an SSLContext that lets anything through:
-	
+		
 		String serverName = "localhost"; // SSL Server Name
 		int sslPort = 4443; // Port where the SSL Server is listening
 		
@@ -68,20 +68,19 @@ public class SSLCheck {
 		}
 		
 		X509TrustManager disabledTrustManager = new X509TrustManager() {
-		    @Override
-		    public void checkClientTrusted(X509Certificate[] chain,
-		            String authType) throws CertificateException {
-		    }
-	
-		    @Override
-		    public void checkServerTrusted(X509Certificate[] chain,
-		            String authType) throws CertificateException {
-		    }
-	
-		    @Override
-		    public X509Certificate[] getAcceptedIssuers() {
-		        return null;
-		    }
+			@Override
+			public void checkClientTrusted(X509Certificate[] chain,
+				String authType) throws CertificateException {}
+			
+			@Override
+			public void checkServerTrusted(X509Certificate[] chain,
+				String authType) throws CertificateException {}
+			
+			@Override
+			public X509Certificate[] getAcceptedIssuers() 
+			{
+				return null;
+			}
 		};
 		
 		
@@ -139,8 +138,8 @@ public class SSLCheck {
 		X509TrustManager trustManager = (X509TrustManager) trustManagerFactory.getTrustManagers()[0];
 		
 		try {
-		    // Assuming RSA key here.
-		    trustManager.checkServerTrusted(serverCertificates, "RSA");
+			// Assuming RSA key here.
+			trustManager.checkServerTrusted(serverCertificates, "RSA");
 		} catch (CertificateException e) {
 			e.printStackTrace();
 		}
@@ -181,49 +180,49 @@ public class SSLCheck {
 	public void testThatCertificateIsNotTrusted()
 	{
 		try {
-            // Load the JDK's cacerts keystore file
-            String filename = System.getProperty("java.home") + "/lib/security/cacerts".replace('/', File.separatorChar);
-            FileInputStream is = new FileInputStream(filename);
-            KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
-            String password = "changeit";
-            keystore.load(is, password.toCharArray());
+			// Load the JDK's cacerts keystore file
+			String filename = System.getProperty("java.home") + "/lib/security/cacerts".replace('/', File.separatorChar);
+			FileInputStream is = new FileInputStream(filename);
+			KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+			String password = "changeit";
+			keystore.load(is, password.toCharArray());
 
-            // This class retrieves the most-trusted CAs from the keystore
-            PKIXParameters parameters = new PKIXParameters(keystore);
+			// This class retrieves the most-trusted CAs from the keystore
+			PKIXParameters parameters = new PKIXParameters(keystore);
 
-            // Get the set of trust anchors, which contain the most-trusted CA certificates
-            List<X509Certificate> trustedCertificates = new ArrayList<X509Certificate>();
-            List<X500Principal> trustedCertificateIssuers = new ArrayList<X500Principal>();
-            Iterator<TrustAnchor> iterator = parameters.getTrustAnchors().iterator();
-            while (iterator.hasNext()) 
-            {
-                TrustAnchor trustAnchor = iterator.next();
-                // Get certificate
-                X509Certificate certificate = trustAnchor.getTrustedCert();
-                X500Principal certificateIssuer = certificate.getIssuerX500Principal();
-                trustedCertificates.add(certificate);
-                trustedCertificateIssuers.add(certificateIssuer);
-                System.out.println(certificate.getIssuerX500Principal());
-            }
+			// Get the set of trust anchors, which contain the most-trusted CA certificates
+			List<X509Certificate> trustedCertificates = new ArrayList<X509Certificate>();
+			List<X500Principal> trustedCertificateIssuers = new ArrayList<X500Principal>();
+			Iterator<TrustAnchor> iterator = parameters.getTrustAnchors().iterator();
+			while (iterator.hasNext()) 
+			{
+				TrustAnchor trustAnchor = iterator.next();
+				// Get certificate
+				X509Certificate certificate = trustAnchor.getTrustedCert();
+				X500Principal certificateIssuer = certificate.getIssuerX500Principal();
+				trustedCertificates.add(certificate);
+				trustedCertificateIssuers.add(certificateIssuer);
+				System.out.println(certificate.getIssuerX500Principal());
+			}
             
-            for (X509Certificate serverCertificate : serverCertificates)
-            {
-	            X500Principal serverCertificateIssuer = serverCertificate.getIssuerX500Principal();
-	            System.out.println(serverCertificateIssuer);
-	            assertTrue(!trustedCertificateIssuers.contains(serverCertificateIssuer));
-            }
+			for (X509Certificate serverCertificate : serverCertificates)
+			{
+			    X500Principal serverCertificateIssuer = serverCertificate.getIssuerX500Principal();
+			    System.out.println(serverCertificateIssuer);
+			    assertTrue(!trustedCertificateIssuers.contains(serverCertificateIssuer));
+			}
             
-        } catch (CertificateException e) {
-        	e.printStackTrace();
-        } catch (KeyStoreException e) {
-        	e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-        	e.printStackTrace();
-        } catch (InvalidAlgorithmParameterException e) {
-        	e.printStackTrace();
-        } catch (IOException e) {
-        	e.printStackTrace();
-        }
+		} catch (CertificateException e) {
+			e.printStackTrace();
+		} catch (KeyStoreException e) {
+			e.printStackTrace();
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		} catch (InvalidAlgorithmParameterException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+}
 	}
 	
 	
