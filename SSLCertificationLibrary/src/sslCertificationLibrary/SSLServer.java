@@ -55,7 +55,7 @@ public class SSLServer
 			SSLSocket sslSocket = (SSLSocket)sslServerSocket.accept();
 			
 			// Create Input / Output Streams for communication with the client
-			while(!sslSocket.isClosed())
+			while (!sslSocket.isClosed())
 			{
 				PrintWriter out = new PrintWriter(sslSocket.getOutputStream(), true);
 				BufferedReader in = new BufferedReader(
@@ -77,7 +77,7 @@ public class SSLServer
 				sslServerSocket.close();
 			}
 		}
-		catch(Exception exp)
+		catch (Exception exp)
 		{
 			PrivilegedActionException priexp = new PrivilegedActionException(exp);
 			System.out.println(" Priv exp --- " + priexp.getMessage());

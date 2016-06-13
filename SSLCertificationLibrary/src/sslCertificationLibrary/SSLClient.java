@@ -73,7 +73,7 @@ public class SSLClient
 			stdIn.close();
 			sslSocket.close();
 		}
-		catch(Exception exp)
+		catch (Exception exp)
 		{
 			System.out.println(" Exception occurred .... " +exp);
 			exp.printStackTrace();
