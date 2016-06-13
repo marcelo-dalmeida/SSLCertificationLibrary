@@ -25,7 +25,6 @@ import javax.net.ssl.SSLSocketFactory;
 
 public class SSLClient 
 {
-
 	/**
 	 * @param args
 	 */
@@ -35,38 +34,39 @@ public class SSLClient
 		int intSSLport = 4443; // Port where the SSL Server is listening
 		PrintWriter out = null;
 		BufferedReader in = null;
-
-    	// Registering the JSSE provider
-    	Security.addProvider(new Provider());
-    	
-    	System.setProperty("javax.net.ssl.trustStore","keystore.jks");
-        System.setProperty("javax.net.ssl.trustStorePassword", "keystore");
-        
-        // Enable debugging to view the handshake and communication which happens between the SSLClient and the SSLServer
-        System.setProperty("javax.net.debug","all");
-
+		
+		// Registering the JSSE provider
+		Security.addProvider(new Provider());
+		
+		
+		System.setProperty("javax.net.ssl.trustStore","keystore.jks");
+		System.setProperty("javax.net.ssl.trustStorePassword", "keystore");
+		
+		// Enable debugging to view the handshake and communication which happens between the SSLClient and the SSLServer
+		System.setProperty("javax.net.debug","all");
+		
 		try 
 		{
 			// Creating Client Sockets
 			SSLSocketFactory sslsocketfactory = (SSLSocketFactory)SSLSocketFactory.getDefault();
 			SSLSocket sslSocket = (SSLSocket)sslsocketfactory.createSocket(strServerName,intSSLport);
-
-         	// Initializing the streams for Communication with the Server
-         	out = new PrintWriter(sslSocket.getOutputStream(), true);
-         	in = new BufferedReader(new InputStreamReader(sslSocket.getInputStream()));
-
+			
+			// Initializing the streams for Communication with the Server
+			out = new PrintWriter(sslSocket.getOutputStream(), true);
+			in = new BufferedReader(new InputStreamReader(sslSocket.getInputStream()));
+			
 			BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
 			String userInput = "Hello Testing ";
 			out.println(userInput);
-
+			
 			while ((userInput = stdIn.readLine()) != null) 
 			{
 			    out.println(userInput);
 			    System.out.println("echo: " + in.readLine());
 			}
-
+			
 			out.println(userInput);
-
+			
 			// Closing the Streams and the Socket
 			out.close();
 			in.close();
