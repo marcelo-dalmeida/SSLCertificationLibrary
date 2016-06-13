@@ -23,29 +23,30 @@ import javax.net.ssl.SSLSocketFactory;
  * 
  */ 
 
-public class SSLClient {
+public class SSLClient 
+{
 
 	/**
 	 * @param args
 	 */
-	public static void main(String[] args) throws Exception{
+	public static void main(String[] args) throws Exception
+	{
 		String strServerName = "localhost"; // SSL Server Name
 		int intSSLport = 4443; // Port where the SSL Server is listening
 		PrintWriter out = null;
-        BufferedReader in = null;
+		BufferedReader in = null;
 
-        {
-        	// Registering the JSSE provider
-        	Security.addProvider(new Provider());
-        	
-        	System.setProperty("javax.net.ssl.trustStore","keystore.jks");
-            System.setProperty("javax.net.ssl.trustStorePassword", "keystore");
-            
-            // Enable debugging to view the handshake and communication which happens between the SSLClient and the SSLServer
-            System.setProperty("javax.net.debug","all");
-		}
+    	// Registering the JSSE provider
+    	Security.addProvider(new Provider());
+    	
+    	System.setProperty("javax.net.ssl.trustStore","keystore.jks");
+        System.setProperty("javax.net.ssl.trustStorePassword", "keystore");
+        
+        // Enable debugging to view the handshake and communication which happens between the SSLClient and the SSLServer
+        System.setProperty("javax.net.debug","all");
 
-		try {
+		try 
+		{
 			// Creating Client Sockets
 			SSLSocketFactory sslsocketfactory = (SSLSocketFactory)SSLSocketFactory.getDefault();
 			SSLSocket sslSocket = (SSLSocket)sslsocketfactory.createSocket(strServerName,intSSLport);
@@ -58,26 +59,24 @@ public class SSLClient {
 			String userInput = "Hello Testing ";
 			out.println(userInput);
 
-			while ((userInput = stdIn.readLine()) != null) {
+			while ((userInput = stdIn.readLine()) != null) 
+			{
 			    out.println(userInput);
 			    System.out.println("echo: " + in.readLine());
 			}
 
-				out.println(userInput);
+			out.println(userInput);
 
-				// Closing the Streams and the Socket
-				out.close();
-				in.close();
-				stdIn.close();
-				sslSocket.close();
+			// Closing the Streams and the Socket
+			out.close();
+			in.close();
+			stdIn.close();
+			sslSocket.close();
 		}
-
 		catch(Exception exp)
 		{
 			System.out.println(" Exception occurred .... " +exp);
 			exp.printStackTrace();
 		}
-
 	}
-
 }
