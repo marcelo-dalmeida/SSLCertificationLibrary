@@ -33,8 +33,7 @@ public class SSLServer
 
 	public static void main(String[] args) throws Exception
 	{
-		
-		int intSSLport = 4443; // Port where the SSL Server needs to listen for new requests from the client
+		int sslPort = 4443; // Port where the SSL Server needs to listen for new requests from the client
 		
 		
 		// Registering the JSSE provider
@@ -52,11 +51,11 @@ public class SSLServer
 		{
 			// Initialize the Server Socket
 			SSLServerSocketFactory sslServerSocketfactory = (SSLServerSocketFactory)SSLServerSocketFactory.getDefault();
-			SSLServerSocket sslServerSocket = (SSLServerSocket)sslServerSocketfactory.createServerSocket(intSSLport);
+			SSLServerSocket sslServerSocket = (SSLServerSocket)sslServerSocketfactory.createServerSocket(sslPort);
 			SSLSocket sslSocket = (SSLSocket)sslServerSocket.accept();
 			
 			// Create Input / Output Streams for communication with the client
-			while(true)
+			while(!sslSocket.isClosed())
 			{
 				PrintWriter out = new PrintWriter(sslSocket.getOutputStream(), true);
 				BufferedReader in = new BufferedReader(

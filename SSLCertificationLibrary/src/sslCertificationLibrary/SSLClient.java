@@ -30,8 +30,8 @@ public class SSLClient
 	 */
 	public static void main(String[] args) throws Exception
 	{
-		String strServerName = "localhost"; // SSL Server Name
-		int intSSLport = 4443; // Port where the SSL Server is listening
+		String serverName = "localhost"; // SSL Server Name
+		int sslPort = 4443; // Port where the SSL Server is listening
 		PrintWriter out = null;
 		BufferedReader in = null;
 		
@@ -48,8 +48,8 @@ public class SSLClient
 		try 
 		{
 			// Creating Client Sockets
-			SSLSocketFactory sslsocketfactory = (SSLSocketFactory)SSLSocketFactory.getDefault();
-			SSLSocket sslSocket = (SSLSocket)sslsocketfactory.createSocket(strServerName,intSSLport);
+			SSLSocketFactory sslSocketFactory = (SSLSocketFactory)SSLSocketFactory.getDefault();
+			SSLSocket sslSocket = (SSLSocket)sslSocketFactory.createSocket(serverName,sslPort);
 			
 			// Initializing the streams for Communication with the Server
 			out = new PrintWriter(sslSocket.getOutputStream(), true);
