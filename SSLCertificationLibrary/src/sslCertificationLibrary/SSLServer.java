@@ -31,7 +31,7 @@ public class SSLServer
 	 * @param args
 	 */
 
-	public static void main(String[] args) throws Exception
+	public static void main(String[] args)
 	{
 		int sslPort = 4443; // Port where the SSL Server needs to listen for new requests from the client
 		

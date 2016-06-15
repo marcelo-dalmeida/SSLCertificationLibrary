@@ -28,7 +28,7 @@ public class SSLClient
 	/**
 	 * @param args
 	 */
-	public static void main(String[] args) throws Exception
+	public static void main(String[] args)
 	{
 		String serverName = "localhost"; // SSL Server Name
 		int sslPort = 4443; // Port where the SSL Server is listening
