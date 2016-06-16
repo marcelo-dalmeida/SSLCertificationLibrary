@@ -6,7 +6,6 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
-import java.security.Security;
 import java.security.SignatureException;
 import java.security.cert.CertPathBuilder;
 import java.security.cert.CertPathBuilderException;
@@ -20,8 +19,6 @@ import java.security.cert.X509CertSelector;
 import java.security.cert.X509Certificate;
 import java.util.HashSet;
 import java.util.Set;
-
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 /**
  * Class for building a certification chain for given certificate and verifying
@@ -117,9 +114,7 @@ public class CertificateVerifier {
 	 */
 	public static PKIXCertPathBuilderResult verifyCertificate(X509Certificate cert, Set<X509Certificate> trustedRootCerts,
 			Set<X509Certificate> intermediateCerts) throws CertificateVerificationException
-	{
-		Security.addProvider(new BouncyCastleProvider());
-		
+	{	
 		// Create the selector that specifies the starting certificate
 		X509CertSelector selector = new X509CertSelector(); 
 	    selector.setCertificate(cert);
@@ -159,13 +154,10 @@ public class CertificateVerifier {
 			//		"Error building certification path: " + 
 			//		cert.getSubjectX500Principal(), certPathEx);
 		} catch (InvalidAlgorithmParameterException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (NoSuchProviderException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
     	return result;
@@ -184,10 +176,10 @@ public class CertificateVerifier {
 			cert.verify(key);
 			return true;
 		} catch (SignatureException sigEx) {
-			// Invalid signature --&gt; not self-signed
+			// Invalid signature -- not self-signed
 			return false;
 		} catch (InvalidKeyException keyEx) {
-			// Invalid key --&gt; not self-signed
+			// Invalid key -- not self-signed
 			return false;
 		}
 	}

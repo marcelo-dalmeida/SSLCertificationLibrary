@@ -8,7 +8,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.security.GeneralSecurityException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyManagementException;
@@ -20,7 +19,6 @@ import java.security.PublicKey;
 import java.security.Security;
 import java.security.SignatureException;
 import java.security.cert.CertificateException;
-import java.security.cert.PKIXCertPathBuilderResult;
 import java.security.cert.PKIXParameters;
 import java.security.cert.TrustAnchor;
 import java.security.cert.X509Certificate;
@@ -31,7 +29,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Scanner;
 import java.util.Set;
 import java.util.TimeZone;
 
@@ -44,6 +41,7 @@ import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 import javax.security.auth.x500.X500Principal;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -52,7 +50,7 @@ import com.sun.net.ssl.internal.ssl.Provider;
 
 import sslCertificationLibrary.CRLVerifier;
 import sslCertificationLibrary.CertificateVerificationException;
-import sslCertificationLibrary.CertificateVerifier;
+import sslCertificationLibrary.ServerVerifier;
 
 public class SSLCheck {
 	
@@ -75,7 +73,7 @@ public class SSLCheck {
 		
 		SSLContext sslContext = null;
 		try {
-			sslContext = SSLContext.getInstance("TLS");
+			sslContext = SSLContext.getInstance(ServerVerifier.TLSv1_2_PROTOCOL);
 		} catch (NoSuchAlgorithmException e2) {
 			e2.printStackTrace();
 		}
@@ -108,8 +106,9 @@ public class SSLCheck {
 	
 		//Create a socket, connect and start the handshake explicitly (since you're not really going to read form it):
 	
-		// Registering the JSSE provider
+		// Registering the JSSE (and BouncyCastle) provider
 		Security.addProvider(new Provider());
+		Security.addProvider(new BouncyCastleProvider());
 		
 		System.setProperty("javax.net.ssl.trustStore","keystore.jks");
 		System.setProperty("javax.net.ssl.trustStorePassword", "keystore");
@@ -229,10 +228,6 @@ public class SSLCheck {
             	CRLVerifier.verifyCertificateCRLs(serverCertificate);
             	System.out.println("VERIFIED VERIFIED VERIFIED");
             	
-            	
-            	Scanner scanner = new Scanner(System.in);
-            	System.out.println("Continue?");
-                scanner.nextLine();
 	            X500Principal serverCertificateIssuer = serverCertificate.getIssuerX500Principal();
 	            System.out.println(serverCertificate.getSubjectX500Principal());
 	            System.out.println(serverCertificate.getIssuerX500Principal());
@@ -243,8 +238,8 @@ public class SSLCheck {
             intermidiateCertificates.add(serverCertificates[1]);
             
             
-            PKIXCertPathBuilderResult result = CertificateVerifier.verifyCertificate(serverCertificates[1], trustedCertificates,
-        			intermidiateCertificates);
+            //PKIXCertPathBuilderResult result = CertificateVerifier.verifyCertificate(serverCertificates[1], trustedCertificates,
+        	//		intermidiateCertificates);
             
         } catch (CertificateException e) {
         	e.printStackTrace();
@@ -257,10 +252,6 @@ public class SSLCheck {
         } catch (IOException e) {
         	e.printStackTrace();
         } catch (CertificateVerificationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (GeneralSecurityException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}	
