@@ -19,15 +19,26 @@ public class Main
 	
 	public static void main(String[] args) 
 	{
-
+		
 		// Registering the JSSE (and BouncyCastle) provider
 		Security.addProvider(new Provider());
 		Security.addProvider(new BouncyCastleProvider());
 		
+		String hostName;
+		
 		URL destinationURL = null;
+		if (args.length == 1)
+		{
+			hostName = args[0];
+		}
+		else
+		{
+			hostName = "www.elavon.com";
+		}
+		
 		try 
 		{
-			destinationURL = new URL("https://www.elavon.com");
+			destinationURL = new URL("https://" + hostName);
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		}

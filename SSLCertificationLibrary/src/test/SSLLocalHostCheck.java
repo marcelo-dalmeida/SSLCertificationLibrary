@@ -1,13 +1,12 @@
 package test;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -15,13 +14,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Security;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.TimeZone;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLPeerUnverifiedException;
@@ -30,7 +25,6 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
-import javax.security.auth.x500.X500Principal;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.AfterClass;
@@ -39,8 +33,6 @@ import org.junit.Test;
 
 import com.sun.net.ssl.internal.ssl.Provider;
 
-import sslCertificationLibrary.verifier.CRLVerifier;
-import sslCertificationLibrary.verifier.CertificateVerificationException;
 import sslCertificationLibrary.verifier.CertificateVerifier;
 import sslCertificationLibrary.verifier.ServerVerifier;
 
@@ -48,8 +40,8 @@ import sslCertificationLibrary.verifier.ServerVerifier;
  * @author Marcelo d'Almeida
  */
 
-public class SSLCheck {
-	
+public class SSLLocalHostCheck 
+{
 	static SSLSocket sslSocket = null;
 	static PrintWriter out = null;
 	static BufferedReader in = null;
@@ -57,7 +49,16 @@ public class SSLCheck {
 	
 	@BeforeClass
 	public static void setUp()
-	{
+	{	
+		//SSLServer.run();
+	
+		try 
+		{
+			Thread.sleep(5000);
+		} catch (InterruptedException e3) {
+			e3.printStackTrace();
+		} 
+		
 		//To get the server certificate in the first place in order to do the verification manually, 
 		//irrespectively of whether it's valid or not, the easiest is to connect via an SSLSocket 
 		//after having disabled any certificate verification.
@@ -74,7 +75,8 @@ public class SSLCheck {
 			e2.printStackTrace();
 		}
 		
-		X509TrustManager disabledTrustManager = new X509TrustManager() {
+		X509TrustManager disabledTrustManager = new X509TrustManager() 
+		{
 		    @Override
 		    public void checkClientTrusted(X509Certificate[] chain,
 		            String authType) throws CertificateException {
@@ -163,79 +165,17 @@ public class SSLCheck {
 	{	
 		for (X509Certificate serverCertificate : serverCertificates)
 		{
-			Date currentDate = new Date();
-			Date startDate = serverCertificate.getNotBefore();
-			Date expirationDate = serverCertificate.getNotAfter();
-			Date currentDateUTC = null;
-			Date startDateUTC = null;
-			Date expirationDateUTC = null;
-			
-			DateFormat formatter = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.FULL);
-			formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-			
 			try {
-				currentDateUTC = formatter.parse(formatter.format(currentDate));
-				startDateUTC = formatter.parse(formatter.format(startDate));
-				expirationDateUTC = formatter.parse(formatter.format(expirationDate));
-			} catch (ParseException e) {
-				e.printStackTrace();
+				serverCertificate.checkValidity();
+			} catch (CertificateExpiredException e1) {
+				fail();
+				e1.printStackTrace();
+			} catch (CertificateNotYetValidException e1) {
+				fail();
+				e1.printStackTrace();
 			}
-		
-			assertTrue(currentDateUTC.before(expirationDateUTC));
-			assertTrue(currentDateUTC.after(startDateUTC));
 		}
 	}
-	
-	//public void 
-	
-	@Test
-	public void testThatCertificateIsNotTrusted()
-	{
-		try {
-
-			try {
-				/*
-				InetAddress inetAddress = InetAddress.getByName("216.58.192.4");
-				String hostName = inetAddress.getHostName();
-			    System.out.println ("Host Name: " + hostName);//display the host
-			    */
-			    
-			    String hostName = "www.elavon.com";
-			    
-				ServerVerifier.verifyCertificates(new URL("https://" + hostName));
-			} catch (MalformedURLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-			
-			Set<X509Certificate> trustedCertificates = CertificateVerifier.getTrustedCertificates();
-			Set<X500Principal> trustedCertificatesIssuers = CertificateVerifier.getTrustedCertificatesIssuers(trustedCertificates);
-            
-            System.out.println(serverCertificates.length);
-            for (X509Certificate serverCertificate : serverCertificates)
-            {
-            	
-            	CRLVerifier.verifyCertificateCRLs(serverCertificate);
-            	System.out.println("CRL Verfied");
-            	
-	            X500Principal serverCertificateIssuer = serverCertificate.getIssuerX500Principal();
-	            System.out.println(serverCertificate.getSubjectX500Principal());
-	            System.out.println(serverCertificate.getIssuerX500Principal());
-	            assertTrue(!trustedCertificatesIssuers.contains(serverCertificateIssuer));
-            }
-            
-            Set<X509Certificate> intermidiateCertificates = new HashSet<X509Certificate>();
-            intermidiateCertificates.add(serverCertificates[1]);
-            
-            
-            //PKIXCertPathBuilderResult result = 
-            CertificateVerifier.verifyCertificate(serverCertificates[1], trustedCertificates, intermidiateCertificates);
-            
-        } catch (CertificateVerificationException e) {
-			e.printStackTrace();
-		}
-	}	
 	
 	@Test
 	public void testThatCertificateIsSelfSigned()

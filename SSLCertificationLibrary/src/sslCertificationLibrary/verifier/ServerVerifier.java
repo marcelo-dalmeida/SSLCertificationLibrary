@@ -150,7 +150,6 @@ public class ServerVerifier {
 	
 	public static void verifySSLProtocols(URL destinationURL)
 	{
-		
 		String[] sslProtocolsToTest = {SSL_v3_0_PROTOCOL, TLS_v1_0_PROTOCOL, TLS_v1_1_PROTOCOL, TLS_v1_2_PROTOCOL};
 		List<String> sslProtocolsAccepted = new ArrayList<String>();
 		List<String> sslProtocolsNotAccepted = new ArrayList<String>();
@@ -183,6 +182,21 @@ public class ServerVerifier {
 				e.printStackTrace();
 			}
 		}
+		Util.printDelimiter();
+		
+		System.out.println("SSL Protocols are supported by the server: ");
+        for (String serverSupported : sslProtocolsAccepted) {
+			System.out.println(serverSupported);
+		}
+        System.out.println();
+        
+        System.out.println("SSL Protocols are NOT supported by the server: ");
+        for (String serverNotSupported : sslProtocolsNotAccepted) {
+			System.out.println(serverNotSupported);
+		}
+        
+        Util.printDelimiter();
+        
 	}
 	
 	public static void verifyCertificates(URL destinationURL)

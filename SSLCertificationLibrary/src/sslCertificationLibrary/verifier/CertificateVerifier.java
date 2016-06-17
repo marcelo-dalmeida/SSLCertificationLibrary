@@ -72,10 +72,6 @@ public class CertificateVerifier
 	    	trustAnchors.add(new TrustAnchor(trustedRootCertificate, null));
 	    }
 	    
-	    Set<X509Certificate>  allCertificates = new HashSet<X509Certificate>();
-	    allCertificates.addAll(trustedRootCertificates);
-	    allCertificates.addAll(intermediateCertificates);
-	    allCertificates.add(certificate);
 	    PKIXCertPathBuilderResult result = null;
 	    
 	    try
