@@ -1,4 +1,4 @@
-package sslCertificationLibrary;
+package test;
 
 import java.io.*;
 import java.security.Security;
@@ -9,6 +9,8 @@ import com.sun.net.ssl.internal.ssl.Provider;
 
 /**
  * @author Joe Prasanna Kumar
+ * Adapted by Marcelo d'Almeida
+ * 
  * This program simulates an SSL Server listening on a specific port for client requests
  * 
  * Algorithm:

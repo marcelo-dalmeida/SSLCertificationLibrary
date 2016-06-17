@@ -8,9 +8,17 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import com.sun.net.ssl.internal.ssl.Provider;
 
-public class Main {
+import sslCertificationLibrary.verifier.ServerVerifier;
+
+/**
+ * @author Marcelo d'Almeida
+ */
+
+public class Main 
+{
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) 
+	{
 
 		// Registering the JSSE (and BouncyCastle) provider
 		Security.addProvider(new Provider());
@@ -19,14 +27,13 @@ public class Main {
 		URL destinationURL = null;
 		try 
 		{
-			destinationURL = new URL("https://www.google.com");
+			destinationURL = new URL("https://www.elavon.com");
 		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
-		ServerVerifier.verifyServerSupportedCipherSuites(destinationURL);
-
-		ServerVerifier.verifyServerCertificates(destinationURL);
+		ServerVerifier.verifySSLProtocols(destinationURL);
+		ServerVerifier.verifySupportedCipherSuites(destinationURL);
+		ServerVerifier.verifyCertificates(destinationURL);
 	}
 }

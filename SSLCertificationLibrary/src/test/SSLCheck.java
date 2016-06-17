@@ -3,32 +3,23 @@ package test;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.PublicKey;
 import java.security.Security;
-import java.security.SignatureException;
 import java.security.cert.CertificateException;
-import java.security.cert.PKIXParameters;
-import java.security.cert.TrustAnchor;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import java.util.TimeZone;
 
@@ -48,9 +39,14 @@ import org.junit.Test;
 
 import com.sun.net.ssl.internal.ssl.Provider;
 
-import sslCertificationLibrary.CRLVerifier;
-import sslCertificationLibrary.CertificateVerificationException;
-import sslCertificationLibrary.ServerVerifier;
+import sslCertificationLibrary.verifier.CRLVerifier;
+import sslCertificationLibrary.verifier.CertificateVerificationException;
+import sslCertificationLibrary.verifier.CertificateVerifier;
+import sslCertificationLibrary.verifier.ServerVerifier;
+
+/**
+ * @author Marcelo d'Almeida
+ */
 
 public class SSLCheck {
 	
@@ -73,7 +69,7 @@ public class SSLCheck {
 		
 		SSLContext sslContext = null;
 		try {
-			sslContext = SSLContext.getInstance(ServerVerifier.TLSv1_2_PROTOCOL);
+			sslContext = SSLContext.getInstance(ServerVerifier.TLS_v1_2_PROTOCOL);
 		} catch (NoSuchAlgorithmException e2) {
 			e2.printStackTrace();
 		}
@@ -196,61 +192,46 @@ public class SSLCheck {
 	public void testThatCertificateIsNotTrusted()
 	{
 		try {
-            // Load the JDK's cacerts keystore file
-            String filename = System.getProperty("java.home") + "/lib/security/cacerts".replace('/', File.separatorChar);
-            FileInputStream is = new FileInputStream(filename);
-            KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
-            String password = "changeit";
-            keystore.load(is, password.toCharArray());
 
-            // This class retrieves the most-trusted CAs from the keystore
-            PKIXParameters parameters = new PKIXParameters(keystore);
-
-            // Get the set of trust anchors, which contain the most-trusted CA certificates
-            Set<X509Certificate> trustedCertificates = new HashSet<X509Certificate>();
-            List<X500Principal> trustedCertificateIssuers = new ArrayList<X500Principal>();
-            Iterator<TrustAnchor> iterator = parameters.getTrustAnchors().iterator();
-            while (iterator.hasNext()) 
-            {
-                TrustAnchor trustAnchor = iterator.next();
-                // Get certificate
-                X509Certificate certificate = trustAnchor.getTrustedCert();
-                X500Principal certificateIssuer = certificate.getIssuerX500Principal();
-                trustedCertificates.add(certificate);
-                trustedCertificateIssuers.add(certificateIssuer);
-                //System.out.println(certificate);
-            }
+			try {
+				/*
+				InetAddress inetAddress = InetAddress.getByName("216.58.192.4");
+				String hostName = inetAddress.getHostName();
+			    System.out.println ("Host Name: " + hostName);//display the host
+			    */
+			    
+			    String hostName = "www.elavon.com";
+			    
+				ServerVerifier.verifyCertificates(new URL("https://" + hostName));
+			} catch (MalformedURLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			
+			Set<X509Certificate> trustedCertificates = CertificateVerifier.getTrustedCertificates();
+			Set<X500Principal> trustedCertificatesIssuers = CertificateVerifier.getTrustedCertificatesIssuers(trustedCertificates);
             
             System.out.println(serverCertificates.length);
             for (X509Certificate serverCertificate : serverCertificates)
             {
             	
             	CRLVerifier.verifyCertificateCRLs(serverCertificate);
-            	System.out.println("VERIFIED VERIFIED VERIFIED");
+            	System.out.println("CRL Verfied");
             	
 	            X500Principal serverCertificateIssuer = serverCertificate.getIssuerX500Principal();
 	            System.out.println(serverCertificate.getSubjectX500Principal());
 	            System.out.println(serverCertificate.getIssuerX500Principal());
-	            assertTrue(!trustedCertificateIssuers.contains(serverCertificateIssuer));
+	            assertTrue(!trustedCertificatesIssuers.contains(serverCertificateIssuer));
             }
             
             Set<X509Certificate> intermidiateCertificates = new HashSet<X509Certificate>();
             intermidiateCertificates.add(serverCertificates[1]);
             
             
-            //PKIXCertPathBuilderResult result = CertificateVerifier.verifyCertificate(serverCertificates[1], trustedCertificates,
-        	//		intermidiateCertificates);
+            //PKIXCertPathBuilderResult result = 
+            CertificateVerifier.verifyCertificate(serverCertificates[1], trustedCertificates, intermidiateCertificates);
             
-        } catch (CertificateException e) {
-        	e.printStackTrace();
-        } catch (KeyStoreException e) {
-        	e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-        	e.printStackTrace();
-        } catch (InvalidAlgorithmParameterException e) {
-        	e.printStackTrace();
-        } catch (IOException e) {
-        	e.printStackTrace();
         } catch (CertificateVerificationException e) {
 			e.printStackTrace();
 		}
@@ -260,32 +241,12 @@ public class SSLCheck {
 	public void testThatCertificateIsSelfSigned()
 	{
 		X509Certificate serverCertificate = serverCertificates[1];
-		try {
-			assertTrue(SSLCheck.isSelfSigned(serverCertificate));
+		try 
+		{
+			assertTrue(CertificateVerifier.isSelfSigned(serverCertificate));
 		} catch (CertificateException | NoSuchAlgorithmException | NoSuchProviderException e) {
 			e.printStackTrace();
 		}		
-	}
-	
-	/**
-	 * Checks whether given X.509 certificate is self-signed.
-	 */
-	public static boolean isSelfSigned(X509Certificate cert)
-			throws CertificateException, NoSuchAlgorithmException,
-			NoSuchProviderException 
-	{
-		try {
-			// Try to verify certificate signature with its own public key
-			PublicKey key = cert.getPublicKey();
-			cert.verify(key);
-			return true;
-		} catch (SignatureException sigEx) {
-			// Invalid signature --&gt; not self-signed
-			return false;
-		} catch (InvalidKeyException keyEx) {
-			// Invalid key --&gt; not self-signed
-			return false;
-		}
 	}
 	
 	@AfterClass

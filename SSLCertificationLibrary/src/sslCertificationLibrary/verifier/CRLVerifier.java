@@ -1,4 +1,4 @@
-package sslCertificationLibrary;
+package sslCertificationLibrary.verifier;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -42,6 +42,7 @@ import org.bouncycastle.asn1.x509.GeneralNames;
  * distribution points. Supports HTTP, HTTPS, FTP and LDAP based URLs.
  * 
  * @author Svetlin Nakov
+ * Adapted by Marcelo d'Almeida
  */
 
 public class CRLVerifier {
@@ -55,28 +56,34 @@ public class CRLVerifier {
 	 * and checks the certificate revocation status against the CRLs coming from
 	 * the distribution points. Supports HTTP, HTTPS, FTP and LDAP based URLs.
 	 * 
-	 * @param cert the certificate to be checked for revocation
+	 * @param certificate the certificate to be checked for revocation
 	 * @throws CertificateVerificationException if the certificate is revoked
 	 */
 	
-	public static void verifyCertificateCRLs(X509Certificate cert)
-			throws CertificateVerificationException {
-		try {
-			List<String> crlDistPoints = getCrlDistributionPoints(cert);
-			for (String crlDP : crlDistPoints) {
-				X509CRL crl = downloadCRL(crlDP);
-				if (crl.isRevoked(cert)) {
+	public static void verifyCertificateCRLs(X509Certificate certificate)
+			throws CertificateVerificationException 
+	{
+		try 
+		{
+			List<String> crlDistributionPoints = getCrlDistributionPoints(certificate);
+			for (String crlDistributionPoint : crlDistributionPoints) 
+			{
+				X509CRL crl = downloadCRL(crlDistributionPoint);
+				if (crl.isRevoked(certificate)) {
 					throw new CertificateVerificationException(
-							"The certificate is revoked by CRL: " + crlDP);
+							"The certificate is revoked by CRL: " + crlDistributionPoint);
 				}
 			}
 		} catch (Exception ex) {
-			if (ex instanceof CertificateVerificationException) {
+			if (ex instanceof CertificateVerificationException) 
+			{
 				throw (CertificateVerificationException) ex;
-			} else {
+			} 
+			else 
+			{
 				throw new CertificateVerificationException(
 						"Can not verify CRL for certificate: " + 
-						cert.getSubjectX500Principal());
+						certificate.getSubjectX500Principal());
 			}
 		}
 	}
@@ -87,15 +94,21 @@ public class CRLVerifier {
 	 */
 	private static X509CRL downloadCRL(String crlURL) throws IOException,
 			CertificateException, CRLException,
-			CertificateVerificationException, NamingException {
+			CertificateVerificationException, NamingException 
+	{
 		if (crlURL.startsWith("http://") || crlURL.startsWith("https://")
-				|| crlURL.startsWith("ftp://")) {
+				|| crlURL.startsWith("ftp://")) 
+		{
 			X509CRL crl = downloadCRLFromWeb(crlURL);
 			return crl;
-		} else if (crlURL.startsWith("ldap://")) {
+		} 
+		else if (crlURL.startsWith("ldap://")) 
+		{
 			X509CRL crl = downloadCRLFromLDAP(crlURL);
 			return crl;
-		} else {
+		} 
+		else 
+		{
 			throw new CertificateVerificationException(
 					"Can not download CRL from certificate " +
 					"distribution point: " + crlURL);
@@ -108,23 +121,27 @@ public class CRLVerifier {
 	 */
 	private static X509CRL downloadCRLFromLDAP(String ldapURL) 
 			throws CertificateException, NamingException, CRLException, 
-			CertificateVerificationException {
-		Hashtable<String, String> env = new Hashtable<String, String>();
-		env.put(Context.INITIAL_CONTEXT_FACTORY, 
+			CertificateVerificationException 
+	{
+		Hashtable<String, String> environment = new Hashtable<String, String>();
+		environment.put(Context.INITIAL_CONTEXT_FACTORY, 
 				"com.sun.jndi.ldap.LdapCtxFactory");
-        env.put(Context.PROVIDER_URL, ldapURL);
+        environment.put(Context.PROVIDER_URL, ldapURL);
 
-        DirContext ctx = new InitialDirContext(env);
-        Attributes avals = ctx.getAttributes("");
-        Attribute aval = avals.get("certificateRevocationList;binary");
-        byte[] val = (byte[])aval.get();
-        if ((val == null) || (val.length == 0)) {
+        DirContext context = new InitialDirContext(environment);
+        Attributes attributes = context.getAttributes("");
+        Attribute atribute = attributes.get("certificateRevocationList;binary");
+        byte[] value = (byte[])atribute.get();
+        if ((value == null) || (value.length == 0)) 
+        {
         	throw new CertificateVerificationException(
         			"Can not download CRL from: " + ldapURL);
-        } else {
-        	InputStream inStream = new ByteArrayInputStream(val);
-            CertificateFactory cf = CertificateFactory.getInstance("X.509");
-        	X509CRL crl = (X509CRL)cf.generateCRL(inStream);
+        } 
+        else 
+        {
+        	InputStream inputStream = new ByteArrayInputStream(value);
+            CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
+        	X509CRL crl = (X509CRL)certificateFactory.generateCRL(inputStream);
         	return crl;
         }
 	}
@@ -135,14 +152,19 @@ public class CRLVerifier {
 	 */
 	private static X509CRL downloadCRLFromWeb(String crlURL)
 			throws MalformedURLException, IOException, CertificateException,
-			CRLException {
+			CRLException 
+	{
 		URL url = new URL(crlURL);
 		InputStream crlStream = url.openStream();
-		try {
-			CertificateFactory cf = CertificateFactory.getInstance("X.509");
-			X509CRL crl = (X509CRL) cf.generateCRL(crlStream);
+		
+		try 
+		{
+			CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
+			X509CRL crl = (X509CRL) certificateFactory.generateCRL(crlStream);
 			return crl;
-		} finally {
+		} 
+		finally 
+		{
 			crlStream.close();
 		}
 	}
@@ -157,36 +179,52 @@ public class CRLVerifier {
 	 * unavailable, returns an empty list. 
 	 */
 	public static List<String> getCrlDistributionPoints(
-			X509Certificate cert) throws CertificateParsingException, IOException 
+			X509Certificate certificate) throws CertificateParsingException, IOException 
 	{
-		byte[] crldpExt = cert.getExtensionValue(
+		byte[] crlDistributionPointsExtension = certificate.getExtensionValue(
 				Extension.cRLDistributionPoints.getId());
-		if (crldpExt == null) {
+		if (crlDistributionPointsExtension == null) 
+		{
 			List<String> emptyList = new ArrayList<String>();
 			return emptyList;
 		}
-		ASN1InputStream oAsnInStream = new ASN1InputStream(
-				new ByteArrayInputStream(crldpExt));
-		ASN1Primitive derObjCrlDP = oAsnInStream.readObject();
-		DEROctetString dosCrlDP = (DEROctetString) derObjCrlDP;
-		byte[] crldpExtOctets = dosCrlDP.getOctets();
-		ASN1InputStream oAsnInStream2 = new ASN1InputStream(
-				new ByteArrayInputStream(crldpExtOctets));
-		ASN1Primitive derObj2 = oAsnInStream2.readObject();
-		CRLDistPoint distPoint = CRLDistPoint.getInstance(derObj2);
+		
+		ASN1InputStream asn1InputStream;
+		ASN1Primitive primitive;
+		
+		asn1InputStream = new ASN1InputStream(
+				new ByteArrayInputStream(crlDistributionPointsExtension));
+		primitive = asn1InputStream.readObject();
+		asn1InputStream.close();
+		DEROctetString crlDistributionPointsOctet = (DEROctetString) primitive;
+		
+		byte[] crlDistributionPointsExtensionOctets = crlDistributionPointsOctet.getOctets();
+		
+		asn1InputStream = new ASN1InputStream(
+				new ByteArrayInputStream(crlDistributionPointsExtensionOctets));
+		primitive = asn1InputStream.readObject();
+		asn1InputStream.close();
+		CRLDistPoint distributionPoints = CRLDistPoint.getInstance(primitive);
+		
 		List<String> crlUrls = new ArrayList<String>();
-		for (DistributionPoint dp : distPoint.getDistributionPoints()) {
-            DistributionPointName dpn = dp.getDistributionPoint();
+		
+		for (DistributionPoint distributionPoint : distributionPoints.getDistributionPoints()) 
+		{
+            DistributionPointName distributionPointName = distributionPoint.getDistributionPoint();
             // Look for URIs in fullName
-            if (dpn != null) {
-                if (dpn.getType() == DistributionPointName.FULL_NAME) {
-                    GeneralName[] genNames = GeneralNames.getInstance(
-                        dpn.getName()).getNames();
+            if (distributionPointName != null) 
+            {
+                if (distributionPointName.getType() == DistributionPointName.FULL_NAME) 
+                {
+                    GeneralName[] generalNames = GeneralNames.getInstance(
+                        distributionPointName.getName()).getNames();
                     // Look for an URI
-                    for (int j = 0; j < genNames.length; j++) {
-                        if (genNames[j].getTagNo() == GeneralName.uniformResourceIdentifier) {
+                    for (int j = 0; j < generalNames.length; j++) 
+                    {
+                        if (generalNames[j].getTagNo() == GeneralName.uniformResourceIdentifier) 
+                        {
                             String url = DERIA5String.getInstance(
-                                genNames[j].getName()).getString();
+                                generalNames[j].getName()).getString();
                             crlUrls.add(url);
                         }
                     }

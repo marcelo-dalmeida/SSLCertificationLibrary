@@ -1,4 +1,4 @@
-package sslCertificationLibrary;
+package sslCertificationLibrary.verifier;
 
 import java.security.cert.PKIXCertPathBuilderResult;
 
@@ -11,7 +11,8 @@ import java.security.cert.PKIXCertPathBuilderResult;
  * 
  * @author Svetlin Nakov
  */
-public class CertificateVerificationResult {
+public class CertificateVerificationResult 
+{
 	private boolean valid;
 	private PKIXCertPathBuilderResult result;
 	private Throwable exception;
@@ -21,7 +22,8 @@ public class CertificateVerificationResult {
 	 * certificate by given certification path.
 	 */
 	public CertificateVerificationResult(
-			PKIXCertPathBuilderResult result) {
+			PKIXCertPathBuilderResult result) 
+	{
 		this.valid = true;
 		this.result = result;
 	}
@@ -31,20 +33,24 @@ public class CertificateVerificationResult {
 	 * certificate by given exception that keeps the problem
 	 * occurred during the verification process.
 	 */
-	public CertificateVerificationResult(Throwable exception) {
+	public CertificateVerificationResult(Throwable exception) 
+	{
 		this.valid = false;
 		this.exception = exception;
 	}
 
-	public boolean isValid() {
+	public boolean isValid() 
+	{
 		return valid;
 	}
 
-	public PKIXCertPathBuilderResult getResult() {
+	public PKIXCertPathBuilderResult getResult() 
+	{
 		return result;
 	}
 
-	public Throwable getException() {
+	public Throwable getException() 
+	{
 		return exception;
 	}	
 }

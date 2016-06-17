@@ -1,4 +1,4 @@
-package sslCertificationLibrary;
+package test;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -11,6 +11,8 @@ import javax.net.ssl.SSLSocketFactory;
 
 /**
  * @author Joe Prasanna Kumar
+ * Adapted by Marcelo d'Almeida
+ * 
  * This program simulates a client socket program which communicates with the SSL Server
  * 
  * Algorithm:

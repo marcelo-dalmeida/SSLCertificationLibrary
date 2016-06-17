@@ -1,4 +1,4 @@
-package sslCertificationLibrary;
+package sslCertificationLibrary.verifier;
 
 import java.io.IOException;
 import java.net.SocketException;
@@ -24,21 +24,28 @@ import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLHandshakeException;
 
+import sslCertificationLibrary.utilities.EnforcedCipherSuiteSSLSocketFactory;
+import sslCertificationLibrary.utilities.Util;
+
+/**
+ * @author Marcelo d'Almeida
+ */
+
 public class ServerVerifier {
 	
 	public static final String X509_CERTIFICATE = "X.509";
-	public static final String TLSv1_2_PROTOCOL = "TLSv1.2";
-	public static final String TLSv1_1_PROTOCOL = "TLSv1.1";
-	public static final String TLSv1_PROTOCOL = "TLSv1";
-	public static final String SSLv3_PROTOCOL = "SSLv3";
+	public static final String TLS_v1_2_PROTOCOL = "TLSv1.2";
+	public static final String TLS_v1_1_PROTOCOL = "TLSv1.1";
+	public static final String TLS_v1_0_PROTOCOL = "TLSv1";
+	public static final String SSL_v3_0_PROTOCOL = "SSLv3";
 	
-	public static void verifyServerSupportedCipherSuites(URL destinationURL)
+	public static void verifySupportedCipherSuites(URL destinationURL)
 	{
 		final int VERIFICATION_TIMEOUT_DEFAULT = 10000;
-		verifyServerSupportedCipherSuites(destinationURL, VERIFICATION_TIMEOUT_DEFAULT);
+		verifySupportedCipherSuites(destinationURL, VERIFICATION_TIMEOUT_DEFAULT);
 	}
 	
-	public static void verifyServerSupportedCipherSuites(URL destinationURL, int verificationTimeout)
+	public static void verifySupportedCipherSuites(URL destinationURL, int verificationTimeout)
 	{
 		float procedureProgress = 0;
 		float timeProgress = 0;
@@ -50,7 +57,7 @@ public class ServerVerifier {
 		SSLContext sslContext = null;
 		try 
 		{
-			sslContext = SSLContext.getInstance(TLSv1_2_PROTOCOL);
+			sslContext = SSLContext.getInstance(TLS_v1_2_PROTOCOL);
 			
 			// Init the SSLContext with a TrustManager[] and SecureRandom()
 			sslContext.init(null, null, null);
@@ -141,13 +148,50 @@ public class ServerVerifier {
         Util.printDelimiter();
 	}
 	
-	public static void verifyServerCertificates(URL destinationURL)
+	public static void verifySSLProtocols(URL destinationURL)
+	{
+		
+		String[] sslProtocolsToTest = {SSL_v3_0_PROTOCOL, TLS_v1_0_PROTOCOL, TLS_v1_1_PROTOCOL, TLS_v1_2_PROTOCOL};
+		List<String> sslProtocolsAccepted = new ArrayList<String>();
+		List<String> sslProtocolsNotAccepted = new ArrayList<String>();
+		
+		sslProtocolsNotAccepted.addAll(Arrays.asList(sslProtocolsToTest));
+		
+		HttpsURLConnection connection = null;
+		SSLContext sslContext = null;
+		for (String sslProtocol : sslProtocolsToTest) 
+		{	
+			try 
+			{
+				sslContext = SSLContext.getInstance(sslProtocol);
+				
+				// Init the SSLContext with a TrustManager[] and SecureRandom()
+				sslContext.init(null, null, null);
+	
+				connection = (HttpsURLConnection) destinationURL.openConnection();
+				
+				connection.setSSLSocketFactory(sslContext.getSocketFactory());
+        		connection.connect();
+        		sslProtocolsAccepted.add(sslProtocol);
+        		sslProtocolsNotAccepted.remove(sslProtocol);
+        		
+			} catch (NoSuchAlgorithmException e1) {
+				e1.printStackTrace();
+			} catch (KeyManagementException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	public static void verifyCertificates(URL destinationURL)
 	{
 		HttpsURLConnection connection = null;
 		SSLContext sslContext;
 		X509Certificate[] certificates = null;
 		try {
-			sslContext = SSLContext.getInstance(TLSv1_2_PROTOCOL);
+			sslContext = SSLContext.getInstance(TLS_v1_2_PROTOCOL);
 			
 			// Init the SSLContext with a TrustManager[] and SecureRandom()
 			sslContext.init(null, null, null);
@@ -164,6 +208,9 @@ public class ServerVerifier {
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		} catch (KeyManagementException e) {
+			e.printStackTrace();
+		} catch (SSLHandshakeException e){
+			System.err.println(e.getMessage());
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -239,14 +286,14 @@ public class ServerVerifier {
 	    
 	    Util.printDelimiter();
 	    
-	    Set<X509Certificate> trustedCertificates = Util.getTrustedCertificates();
+	    Set<X509Certificate> trustedCertificates = CertificateVerifier.getTrustedCertificates();
 	    Set<X509Certificate> intermediateCertificates = new HashSet<X509Certificate>();
 	    X509Certificate certificate = certificates[0];
 	    
 	    intermediateCertificates.addAll(Arrays.asList(certificates));
 	    
 	    try {
-			CertificateVerifier.verifyCertificate((X509Certificate)certificate, trustedCertificates, intermediateCertificates);
+			CertificateVerifier.verifyCertificate(certificate, trustedCertificates, intermediateCertificates);
 			
 			for (int i = 0; i < certificates.length - 1; i++) {
 		    	certificates[i].verify(certificates[i+1].getPublicKey());

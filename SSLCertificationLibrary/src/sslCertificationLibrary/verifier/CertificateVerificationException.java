@@ -1,4 +1,4 @@
-package sslCertificationLibrary;
+package sslCertificationLibrary.verifier;
 
 /**
  * This class wraps an exception that could be thrown during
@@ -6,14 +6,17 @@ package sslCertificationLibrary;
  * 
  * @author Svetlin Nakov
  */
-public class CertificateVerificationException extends Exception {
+public class CertificateVerificationException extends Exception 
+{
 	private static final long serialVersionUID = 1L;
 
-	public CertificateVerificationException(String message, Throwable cause) {
+	public CertificateVerificationException(String message, Throwable cause) 
+	{
         super(message, cause);
     }
 
-	public CertificateVerificationException(String message) {
+	public CertificateVerificationException(String message) 
+	{
         super(message);
     }
 }
