@@ -33,7 +33,7 @@ public class Main
 		}
 		else
 		{
-			hostName = "www.elavon.com";
+			hostName = "www.google.com";
 		}
 		
 		try 
@@ -43,8 +43,11 @@ public class Main
 			e.printStackTrace();
 		}
 		
+		
 		ServerVerifier.verifySSLProtocols(destinationURL);
 		ServerVerifier.verifySupportedCipherSuites(destinationURL);
 		ServerVerifier.verifyCertificates(destinationURL);
+		
+		ServerVerifier.showCertificateValidityDateInfo(destinationURL);
 	}
 }

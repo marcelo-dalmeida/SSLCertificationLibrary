@@ -13,6 +13,10 @@ import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
+import java.time.Clock;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -329,5 +333,99 @@ public class ServerVerifier {
 		}
 	    
 	    Util.printDelimiter();
+	}
+	
+	public static void showCertificateValidityDateInfo(URL destinationURL)
+	{
+		final String UTC_TIMEZONE = "UTC";
+		
+		HttpsURLConnection connection = null;
+		SSLContext sslContext;
+		X509Certificate[] certificates = null;
+		try {
+			sslContext = SSLContext.getInstance(TLS_v1_2_PROTOCOL);
+			
+			// Init the SSLContext with a TrustManager[] and SecureRandom()
+			sslContext.init(null, null, null);
+			
+			connection = (HttpsURLConnection) destinationURL.openConnection();
+		    connection.setSSLSocketFactory(sslContext.getSocketFactory());
+		    connection.connect();
+		    
+			certificates = (X509Certificate[]) connection.getServerCertificates();
+			
+
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		} catch (KeyManagementException e) {
+			e.printStackTrace();
+		} catch (SSLHandshakeException e){
+			System.err.println(e.getMessage());
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		DateTimeFormatter dateTimePattern = DateTimeFormatter.ofPattern("MMM d yyyy  hh:mm a O");
+	    
+	    ZonedDateTime currentDate = ZonedDateTime.now(Clock.systemUTC());
+		ZonedDateTime startDate;
+		ZonedDateTime expirationDate;
+		
+		for (X509Certificate certificate : certificates)
+		{
+			// Conversion of Date to ZonedDateTime (Java 8)
+			startDate = ZonedDateTime.ofInstant(certificate.getNotBefore().toInstant(), ZoneId.of(UTC_TIMEZONE));
+			expirationDate = ZonedDateTime.ofInstant(certificate.getNotAfter().toInstant(), ZoneId.of(UTC_TIMEZONE));
+			
+			System.out.println("Subject: ");
+            System.out.println(certificate.getSubjectX500Principal());
+            System.out.println();
+            
+            System.out.println("Issuer: ");
+            System.out.println(certificate.getIssuerX500Principal());
+            System.out.println();
+            
+            System.out.println("Serial Number: ");
+            System.out.println(certificate.getSerialNumber());
+            System.out.println();
+            
+            System.out.println("Validity dates: ");
+			System.out.println(startDate.format(dateTimePattern));
+			System.out.println(expirationDate.format(dateTimePattern));
+			System.out.println();
+			
+			System.out.println("Now: ");
+			System.out.println(currentDate.format(dateTimePattern));
+			System.out.println();
+			
+			
+			if (startDate.isBefore(currentDate))
+			{
+				System.out.println("This certificate is valid since");
+				Util.showTimeDifference(startDate, currentDate);
+				System.out.println("ago");
+			}
+			else
+			{
+				System.out.println("This certificate is going to be valid from");
+				Util.showTimeDifference(currentDate, expirationDate);
+			}
+			
+			System.out.println();
+			
+			if (expirationDate.isAfter(currentDate))
+			{
+				System.out.println("This certificate is still valid for");
+				Util.showTimeDifference(currentDate, expirationDate);
+			}
+			else
+			{
+				System.out.println("This certificate expired since");
+				Util.showTimeDifference(expirationDate, currentDate);
+				System.out.println("ago");
+			}
+			Util.printDelimiter();
+		}
 	}
 }
