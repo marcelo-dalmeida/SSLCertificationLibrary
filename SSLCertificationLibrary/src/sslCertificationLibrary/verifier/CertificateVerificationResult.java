@@ -3,13 +3,13 @@ package sslCertificationLibrary.verifier;
 import java.security.cert.PKIXCertPathBuilderResult;
 
 /**
+ * @author Svetlin Nakov
+ *  
  * This class keeps the result from the certificate verification
  * process. If the the certificate is verified as valid, the built
  * certification chain is stored in the Result property. If the
  * certificate is invalid, the problem is stored in the Exception
  * property. 
- * 
- * @author Svetlin Nakov
  */
 public class CertificateVerificationResult 
 {
@@ -21,8 +21,7 @@ public class CertificateVerificationResult
 	 * Constructs a certificate verification result for valid
 	 * certificate by given certification path.
 	 */
-	public CertificateVerificationResult(
-			PKIXCertPathBuilderResult result) 
+	public CertificateVerificationResult(PKIXCertPathBuilderResult result) 
 	{
 		this.valid = true;
 		this.result = result;

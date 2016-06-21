@@ -36,28 +36,28 @@ import org.bouncycastle.asn1.x509.GeneralNames;
 
 
 /**
+ * @author Svetlin Nakov
+ * Adapted by Marcelo d'Almeida
+ * 
  * Class that verifies CRLs for given X509 certificate. Extracts the CRL
  * distribution points from the certificate (if available) and checks the
  * certificate revocation status against the CRLs coming from the
  * distribution points. Supports HTTP, HTTPS, FTP and LDAP based URLs.
- * 
- * @author Svetlin Nakov
- * Adapted by Marcelo d'Almeida
  */
 
 public class CRLVerifier {
 
 	
-	/*
-	 * Requires Bouncy Castle
-	 */
 	/**
-	 * Extracts the CRL distribution points from the certificate (if available)
-	 * and checks the certificate revocation status against the CRLs coming from
-	 * the distribution points. Supports HTTP, HTTPS, FTP and LDAP based URLs.
+	 * Extracts the CRL (Certificate Revocation List) distribution points from the 
+	 * certificate (if available) and checks the certificate revocation status 
+	 * against the CRLs coming from the distribution points. 
+	 * Supports HTTP, HTTPS, FTP and LDAP based URLs.
 	 * 
-	 * @param certificate the certificate to be checked for revocation
-	 * @throws CertificateVerificationException if the certificate is revoked
+	 * Requires Bouncy Castle.
+	 * 
+	 * @param certificate - The certificate to be checked for revocation.
+	 * @throws CertificateVerificationException if the certificate is revoked.
 	 */
 	
 	public static void verifyCertificateCRLs(X509Certificate certificate)
@@ -74,26 +74,31 @@ public class CRLVerifier {
 							"The certificate is revoked by CRL: " + crlDistributionPoint);
 				}
 			}
-		} catch (Exception ex) {
-			if (ex instanceof CertificateVerificationException) 
-			{
-				throw (CertificateVerificationException) ex;
-			} 
-			else 
-			{
-				throw new CertificateVerificationException(
-						"Can not verify CRL for certificate: " + 
-						certificate.getSubjectX500Principal());
-			}
-		}
+		} catch (CertificateVerificationException e) {
+			
+			throw (CertificateVerificationException) e;
+			
+		} catch (Exception e) {
+			
+			throw new CertificateVerificationException(
+					"Can not verify CRL for certificate: " + 
+					certificate.getSubjectX500Principal());
+		} 
 	}
-	
 	
 	/**
 	 * Downloads CRL from given URL. Supports http, https, ftp and ldap based URLs.
+	 * 
+	 * @param crlURL
+	 * @return The requested CRL
+	 * @throws IOException 
+	 * @throws CertificateException
+	 * @throws CRLException
+	 * @throws CertificateVerificationException
+	 * @throws NamingException
 	 */
-	private static X509CRL downloadCRL(String crlURL) throws IOException,
-			CertificateException, CRLException,
+	private static X509CRL downloadCRL(String crlURL) 
+			throws IOException, CertificateException, CRLException,
 			CertificateVerificationException, NamingException 
 	{
 		if (crlURL.startsWith("http://") || crlURL.startsWith("https://")
@@ -118,6 +123,13 @@ public class CRLVerifier {
 	/**
 	 * Downloads a CRL from given LDAP url, e.g.
 	 * ldap://ldap.infonotary.com/dc=identity-ca,dc=infonotary,dc=com
+	 * 
+	 * @param ldapURL
+	 * @return The requested CRL 
+	 * @throws CertificateException
+	 * @throws NamingException
+	 * @throws CRLException
+	 * @throws CertificateVerificationException
 	 */
 	private static X509CRL downloadCRLFromLDAP(String ldapURL) 
 			throws CertificateException, NamingException, CRLException, 
@@ -149,6 +161,13 @@ public class CRLVerifier {
 	/**
 	 * Downloads a CRL from given HTTP/HTTPS/FTP URL, e.g.
 	 * http://crl.infonotary.com/crl/identity-ca.crl
+	 * 
+	 * @param crlURL
+	 * @return The requested CRL 
+	 * @throws MalformedURLException
+	 * @throws IOException
+	 * @throws CertificateException
+	 * @throws CRLException
 	 */
 	private static X509CRL downloadCRLFromWeb(String crlURL)
 			throws MalformedURLException, IOException, CertificateException,
@@ -170,16 +189,24 @@ public class CRLVerifier {
 	}
 	
 	
-	/*
-	 * Requires Bouncy Castle
+	
+	/**
+
 	 */
 	/**
 	 * Extracts all CRL distribution point URLs from the "CRL Distribution Point"
 	 * extension in a X.509 certificate. If CRL distribution point extension is
-	 * unavailable, returns an empty list. 
+	 * unavailable, returns an empty list.
+	 * 
+	 * Requires Bouncy Castle
+	 * 
+	 * @param certificate - The certificate which the Crl Distribution Points will be got.
+	 * @return A list with the crl distribution points
+	 * @throws CertificateParsingException
+	 * @throws IOException
 	 */
-	public static List<String> getCrlDistributionPoints(
-			X509Certificate certificate) throws CertificateParsingException, IOException 
+	public static List<String> getCrlDistributionPoints(X509Certificate certificate) 
+			throws CertificateParsingException, IOException 
 	{
 		byte[] crlDistributionPointsExtension = certificate.getExtensionValue(
 				Extension.cRLDistributionPoints.getId());
@@ -188,6 +215,7 @@ public class CRLVerifier {
 			List<String> emptyList = new ArrayList<String>();
 			return emptyList;
 		}
+		
 		
 		ASN1InputStream asn1InputStream;
 		ASN1Primitive primitive;
@@ -206,7 +234,10 @@ public class CRLVerifier {
 		asn1InputStream.close();
 		CRLDistPoint distributionPoints = CRLDistPoint.getInstance(primitive);
 		
+		
 		List<String> crlUrls = new ArrayList<String>();
+		GeneralName[] generalNames;
+		String url;
 		
 		for (DistributionPoint distributionPoint : distributionPoints.getDistributionPoints()) 
 		{
@@ -216,15 +247,13 @@ public class CRLVerifier {
             {
                 if (distributionPointName.getType() == DistributionPointName.FULL_NAME) 
                 {
-                    GeneralName[] generalNames = GeneralNames.getInstance(
-                        distributionPointName.getName()).getNames();
+                    generalNames = GeneralNames.getInstance(distributionPointName.getName()).getNames();
                     // Look for an URI
                     for (int j = 0; j < generalNames.length; j++) 
                     {
                         if (generalNames[j].getTagNo() == GeneralName.uniformResourceIdentifier) 
                         {
-                            String url = DERIA5String.getInstance(
-                                generalNames[j].getName()).getString();
+                            url = DERIA5String.getInstance(generalNames[j].getName()).getString();
                             crlUrls.add(url);
                         }
                     }

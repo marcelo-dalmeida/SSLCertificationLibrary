@@ -2,10 +2,11 @@ package sslCertificationLibrary.utilities;
 
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.Temporal;
 
 /**
  * @author Marcelo d'Almeida
+ * 
+ * Miscellaneous functions
  */
 
 public class Util 
@@ -17,8 +18,18 @@ public class Util
         System.out.println();
 	}
 	
-	public static void showTimeDifference(Temporal dateTime, Temporal referenceDateTime)
+	/**
+	 * Method to show the difference -in years, months, days, hours, minutes, and seconds-
+	 * of two certificate validity dates (or any dateTime).
+	 * If the dateTime is before the referenceDateTime, the result will be positive numbers.
+	 * They will be negative, otherwise.
+	 * 
+	 * @param dateTime - The initial date.
+	 * @param referenceDateTime - The reference date for comparison.
+	 */
+	public static void showTimeDifference(ZonedDateTime dateTime, ZonedDateTime referenceDateTime)
 	{
+		// A temporary DateTime to handle time units
 		ZonedDateTime tempDateTime = ZonedDateTime.from(dateTime);
 
 		long years = tempDateTime.until(referenceDateTime, ChronoUnit.YEARS);
@@ -39,6 +50,7 @@ public class Util
 		long seconds = tempDateTime.until(referenceDateTime, ChronoUnit.SECONDS);
 		
 		
+		// Printing part. Omits 0 values and handles singular and plural forms
 		if (years != 0)
 		{
 			System.out.print(years);

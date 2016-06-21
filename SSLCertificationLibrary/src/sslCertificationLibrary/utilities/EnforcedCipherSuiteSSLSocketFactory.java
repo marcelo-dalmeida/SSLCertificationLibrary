@@ -10,6 +10,11 @@ import javax.net.ssl.SSLSocketFactory;
 
 /**
  * @author Marcelo d'Almeida
+ * 
+ * Class that overrides SSLSocketFactory to enforce the use of a specific cipher suite.
+ * This way, the program can try connection with different cipher suites available 
+ * and check which ones are supported by the server 
+ *  
  */
 
 public class EnforcedCipherSuiteSSLSocketFactory extends SSLSocketFactory 
@@ -27,13 +32,13 @@ public class EnforcedCipherSuiteSSLSocketFactory extends SSLSocketFactory
 	@Override
 	public String[] getDefaultCipherSuites() 
 	{
-	    return setupEnforcedCipherSuites(this.delegate);
+	    return setupEnforcedCipherSuite();
 	}
 	
 	@Override
 	public String[] getSupportedCipherSuites() 
 	{	
-	    return setupEnforcedCipherSuites(this.delegate);
+	    return setupEnforcedCipherSuite();
 	}
 	
 	@Override
@@ -41,7 +46,7 @@ public class EnforcedCipherSuiteSSLSocketFactory extends SSLSocketFactory
 	        UnknownHostException 
 	{
 	    Socket socket = this.delegate.createSocket(arg0, arg1);
-	    String[] cipherSuites = setupEnforcedCipherSuites(delegate);
+	    String[] cipherSuites = setupEnforcedCipherSuite();
 	    ((SSLSocket)socket).setEnabledCipherSuites(cipherSuites);
 	
 	    return socket;
@@ -51,7 +56,7 @@ public class EnforcedCipherSuiteSSLSocketFactory extends SSLSocketFactory
 	public Socket createSocket(InetAddress arg0, int arg1) throws IOException 
 	{
 	    Socket socket = this.delegate.createSocket(arg0, arg1);
-	    String[] cipherSuites = setupEnforcedCipherSuites(delegate);
+	    String[] cipherSuites = setupEnforcedCipherSuite();
 	    ((SSLSocket)socket).setEnabledCipherSuites(cipherSuites);
 	
 	    return socket;
@@ -62,7 +67,7 @@ public class EnforcedCipherSuiteSSLSocketFactory extends SSLSocketFactory
 	        throws IOException 
 	{
 	    Socket socket = this.delegate.createSocket(arg0, arg1, arg2, arg3);
-	    String[] cipherSuites = setupEnforcedCipherSuites(delegate);
+	    String[] cipherSuites = setupEnforcedCipherSuite();
 	    ((SSLSocket)socket).setEnabledCipherSuites(cipherSuites);
 	
 	    return socket;
@@ -73,7 +78,7 @@ public class EnforcedCipherSuiteSSLSocketFactory extends SSLSocketFactory
 	        throws IOException, UnknownHostException 
 	{
 	    Socket socket = this.delegate.createSocket(arg0, arg1, arg2, arg3);
-	    String[] cipherSuites = setupEnforcedCipherSuites(delegate);
+	    String[] cipherSuites = setupEnforcedCipherSuite();
 	    ((SSLSocket)socket).setEnabledCipherSuites(cipherSuites);
 	
 	    return socket;
@@ -84,13 +89,18 @@ public class EnforcedCipherSuiteSSLSocketFactory extends SSLSocketFactory
 	        int arg3) throws IOException 
 	{
 	    Socket socket = this.delegate.createSocket(arg0, arg1, arg2, arg3);
-	    String[] cipherSuites = setupEnforcedCipherSuites(delegate);
+	    String[] cipherSuites = setupEnforcedCipherSuite();
 	    ((SSLSocket)socket).setEnabledCipherSuites(cipherSuites);
 	
 	    return socket;
 	}
 	
-	private String[] setupEnforcedCipherSuites(SSLSocketFactory sslSocketFactory) 
+	/**
+	 * Enforces the chosen cipher suite.
+	 * 
+	 * @return suitesList - The list containing only the enforced cipher suite.
+	 */
+	private String[] setupEnforcedCipherSuite() 
 	{
 	    String[] suitesList = {ENFORCED_CIPHER_SUITE};
 	    return suitesList;

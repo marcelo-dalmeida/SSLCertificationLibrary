@@ -33,6 +33,9 @@ import sslCertificationLibrary.utilities.Util;
 
 /**
  * @author Marcelo d'Almeida
+ * 
+ * Class for verifying server related things. It handles SSL protocols, 
+ * cipher suites, and certificate checks.
  */
 
 public class ServerVerifier {
@@ -43,12 +46,25 @@ public class ServerVerifier {
 	public static final String TLS_v1_0_PROTOCOL = "TLSv1";
 	public static final String SSL_v3_0_PROTOCOL = "SSLv3";
 	
+	/**
+	 * Verify Cipher Suites supported by the server.
+	 * It provides a 10 seconds default timeout. 
+	 * 
+	 * @param destinationURL - WebSite URL (e.g. www.example.com).
+	 */
 	public static void verifySupportedCipherSuites(URL destinationURL)
 	{
 		final int VERIFICATION_TIMEOUT_DEFAULT = 10000;
 		verifySupportedCipherSuites(destinationURL, VERIFICATION_TIMEOUT_DEFAULT);
 	}
 	
+	/**
+	 * Verify the cipher suites supported by the server.
+	 * It gets the cipher suites and tests it one by one through connection to the server.  
+	 * 
+	 * @param destinationURL - WebSite URL (e.g. www.example.com).
+	 * @param verificationTimeout - Max amount of time given to the method to check all certificates.
+	 */
 	public static void verifySupportedCipherSuites(URL destinationURL, int verificationTimeout)
 	{
 		float procedureProgress = 0;
@@ -120,6 +136,7 @@ public class ServerVerifier {
 			}
         	currentTime = System.currentTimeMillis() - startTime;
         	
+        	// Handles 'progress bar'
         	totalNumberOfPendingCipherSuites = cipherSuitesToVerifyServerSupport.size();
         	timeProgress = (float)(currentTime)/(float)(verificationTimeout);
         	timeProgress = timeProgress > 1 ? 1 : timeProgress;
@@ -152,6 +169,11 @@ public class ServerVerifier {
         Util.printDelimiter();
 	}
 	
+	/**
+	 * Verify the ssl protocols supported by the server.
+	 * 
+	 * @param destinationURL - WebSite URL (e.g. www.example.com).
+	 */
 	public static void verifySSLProtocols(URL destinationURL)
 	{
 		String[] sslProtocolsToTest = {SSL_v3_0_PROTOCOL, TLS_v1_0_PROTOCOL, TLS_v1_1_PROTOCOL, TLS_v1_2_PROTOCOL};
@@ -168,7 +190,6 @@ public class ServerVerifier {
 			{
 				sslContext = SSLContext.getInstance(sslProtocol);
 				
-				// Init the SSLContext with a TrustManager[] and SecureRandom()
 				sslContext.init(null, null, null);
 	
 				connection = (HttpsURLConnection) destinationURL.openConnection();
@@ -189,13 +210,15 @@ public class ServerVerifier {
 		Util.printDelimiter();
 		
 		System.out.println("SSL Protocols are supported by the server: ");
-        for (String serverSupported : sslProtocolsAccepted) {
+        for (String serverSupported : sslProtocolsAccepted) 
+        {
 			System.out.println(serverSupported);
 		}
         System.out.println();
         
         System.out.println("SSL Protocols are NOT supported by the server: ");
-        for (String serverNotSupported : sslProtocolsNotAccepted) {
+        for (String serverNotSupported : sslProtocolsNotAccepted) 
+        {
 			System.out.println(serverNotSupported);
 		}
         
@@ -203,6 +226,11 @@ public class ServerVerifier {
         
 	}
 	
+	/**
+	 * Verify certificates provided by the server.
+	 * 
+	 * @param destinationURL - WebSite URL (e.g. www.example.com).
+	 */
 	public static void verifyCertificates(URL destinationURL)
 	{
 		HttpsURLConnection connection = null;
@@ -211,7 +239,6 @@ public class ServerVerifier {
 		try {
 			sslContext = SSLContext.getInstance(TLS_v1_2_PROTOCOL);
 			
-			// Init the SSLContext with a TrustManager[] and SecureRandom()
 			sslContext.init(null, null, null);
 			
 			connection = (HttpsURLConnection) destinationURL.openConnection();
@@ -335,6 +362,11 @@ public class ServerVerifier {
 	    Util.printDelimiter();
 	}
 	
+	/**
+	 * Shows detailed information about validity such as the exact time left to expire and others.
+	 * 
+	 * @param destinationURL - WebSite URL (e.g. www.example.com).
+	 */
 	public static void showCertificateValidityDateInfo(URL destinationURL)
 	{
 		final String UTC_TIMEZONE = "UTC";

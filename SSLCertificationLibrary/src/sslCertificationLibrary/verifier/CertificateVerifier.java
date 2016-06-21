@@ -31,17 +31,16 @@ import java.util.Set;
 import javax.security.auth.x500.X500Principal;
 
 /**
- * Class for building a certification chain for given certificate and verifying
- * it. Relies on a set of root CA certificates and intermediate certificates
- * that will be used for building the certification chain. The verification
- * process assumes that all self-signed certificates in the set are trusted
- * root CA certificates and all other certificates in the set are intermediate
- * certificates.
- * 
  * @author Svetlin Nakov (base code)
  * Adapted by Marcelo d'Almeida
  * 
  * @author Marcelo d'Almeida (additional code)
+ * 
+ * Class for building a certification chain for given certificate and verifying
+ * it. Relies on a set of root CA certificates and intermediate certificates
+ * that will be used for building the certification chain.
+ * It also provides the trusted certificates in the JAVA trust store and if
+ * the certificate is self signed.
  */
 public class CertificateVerifier 
 {		
@@ -50,11 +49,13 @@ public class CertificateVerifier
 	 * Attempts to build a certification chain for given certificate and to verify
 	 * it. Relies on a set of root CA certificates (trust anchors) and a set of
 	 * intermediate certificates (to be used as part of the chain).
-	 * @param certificate - certificate for validation
-	 * @param trustedRootCertificates - set of trusted root CA certificates
-	 * @param intermediateCertificates - set of intermediate certificates
-	 * @return the certification chain (if verification is successful)
-	 * @throws GeneralSecurityException - if the verification is not successful
+	 * 
+	 * @param certificate - Certificate for validation
+	 * @param trustedRootCertificates - Set of trusted root CA certificates
+	 * @param intermediateCertificates - Set of intermediate certificates
+	 * @return PKIXCertPathBuilderResult - The certification chain 
+	 * (if verification is successful)
+	 * @throws GeneralSecurityException - If the verification is not successful
 	 * 		(e.g. certification path cannot be built or some certificate in the
 	 * 		chain is expired)
 	 */
@@ -77,8 +78,7 @@ public class CertificateVerifier
 	    try
 	    {
 	    	// Configure the PKIX certificate builder algorithm parameters
-		    PKIXBuilderParameters pkixParameters = 
-				new PKIXBuilderParameters(trustAnchors, selector);
+		    PKIXBuilderParameters pkixParameters = new PKIXBuilderParameters(trustAnchors, selector);
 			
 			// Disable CRL checks (this is done manually as additional step)
 			pkixParameters.setRevocationEnabled(false);
@@ -92,11 +92,13 @@ public class CertificateVerifier
 			CertPathBuilder builder = CertPathBuilder.getInstance("PKIX", "BC");
 			result = (PKIXCertPathBuilderResult) builder.build(pkixParameters);
 		
-	    }catch (CertPathBuilderException certPathEx) {
+	    }catch (CertPathBuilderException certPathEx) 
+	    {
 	    	System.err.println("Unable to find certificate chain");
 			//throw new CertificateVerificationException(
 			//		"Error building certification path: " + 
 			//		cert.getSubjectX500Principal(), certPathEx);
+	    	
 		} catch (InvalidAlgorithmParameterException e) {
 			e.printStackTrace();
 		} catch (NoSuchAlgorithmException e) {
@@ -109,10 +111,15 @@ public class CertificateVerifier
 	
 	/**
 	 * Checks whether given X.509 certificate is self-signed.
+	 * 
+	 * @param certificate - Certificate for validation.
+	 * @return if it is self-signed or not.
+	 * @throws NoSuchProviderException 
+	 * @throws NoSuchAlgorithmException 
+	 * @throws CertificateException
 	 */
-	public static boolean isSelfSigned(X509Certificate certificate)
-			throws CertificateException, NoSuchAlgorithmException,
-			NoSuchProviderException 
+	public static boolean isSelfSigned(X509Certificate certificate) 
+			throws CertificateException, NoSuchAlgorithmException, NoSuchProviderException
 	{
 		try 
 		{
@@ -130,6 +137,11 @@ public class CertificateVerifier
 		}
 	}
 	
+	/**
+	 * It returns the trusted certificates in the Java trust store
+	 * 
+	 * @returns Set of trusted certificates.
+	 */
 	public static Set<X509Certificate> getTrustedCertificates()
 	{
 		// Load the JDK's cacerts keystore file
@@ -175,21 +187,31 @@ public class CertificateVerifier
 	    return trustedCertificates;
 	}
 	
+	/**
+	 * A shortcut to get certificate issuers of all trusted certificates. 
+	 * 
+	 * @returns Set of trusted certificate issuers.
+	 */
 	public static Set<X500Principal> getTrustedCertificatesIssuers()
 	{
 		Set<X509Certificate> trustedCertificates = getTrustedCertificates();
-		return getTrustedCertificatesIssuers(trustedCertificates);
+		return getCertificatesIssuers(trustedCertificates);
 	}
 	
-	public static Set<X500Principal> getTrustedCertificatesIssuers(Set<X509Certificate> trustedCertificates)
+	/**
+	 * A shortcut to get certificate issuers.
+	 * It can be used to get Trusted Certificates Issuers given trusted certificates.
+	 * 
+	 * @returns Set of certificate issuers.
+	 */
+	public static Set<X500Principal> getCertificatesIssuers(Set<X509Certificate> certificates)
 	{
 	    Set<X500Principal> trustedCertificatesIssuers = new HashSet<X500Principal>();
 	    
-	    for (X509Certificate certificate : trustedCertificates) 
+	    for (X509Certificate certificate : certificates) 
 	    {
             X500Principal certificateIssuer = certificate.getIssuerX500Principal();
             trustedCertificatesIssuers.add(certificateIssuer);
-            //System.out.println(certificate);
 		}
 	    return trustedCertificatesIssuers;
 	}

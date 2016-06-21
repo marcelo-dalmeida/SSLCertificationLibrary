@@ -21,8 +21,7 @@ import javax.net.ssl.SSLSocketFactory;
  * 3. Create an instance of SSLSocketFactory
  * 4. Create an instance of SSLSocket
  * 5. Create an OutputStream object to write to the SSL Server
- * 6. Create an InputStream object to receive messages back from the SSL Server
- * 
+ * 6. Create an InputStream object to receive messages back from the SSL Server 
  */ 
 
 public class SSLClient 
@@ -32,14 +31,15 @@ public class SSLClient
 	 */
 	public static void main(String[] args)
 	{
-		String serverName = "localhost"; // SSL Server Name
-		int sslPort = 4443; // Port where the SSL Server is listening
+		// SSL Server Name
+		String serverName = "localhost";
+		// Port where the SSL Server is listening
+		int sslPort = 4443; 
 		PrintWriter out = null;
 		BufferedReader in = null;
 		
 		// Registering the JSSE provider
 		Security.addProvider(new Provider());
-		
 		
 		System.setProperty("javax.net.ssl.trustStore","keystore.jks");
 		System.setProperty("javax.net.ssl.trustStorePassword", "keystore");
@@ -61,10 +61,12 @@ public class SSLClient
 			String userInput = "Hello Testing ";
 			out.println(userInput);
 			
-			while ((userInput = stdIn.readLine()) != null) 
+			userInput = stdIn.readLine();
+			while (userInput != null) 
 			{
 			    out.println(userInput);
 			    System.out.println("echo: " + in.readLine());
+			    userInput = stdIn.readLine();
 			}
 			
 			out.println(userInput);

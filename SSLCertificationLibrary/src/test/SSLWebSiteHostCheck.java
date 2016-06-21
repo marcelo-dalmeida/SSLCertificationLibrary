@@ -8,6 +8,8 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.sun.net.ssl.internal.ssl.Provider;
+
 import sslCertificationLibrary.verifier.ServerVerifier;
 
 /**
@@ -19,9 +21,14 @@ public class SSLWebSiteHostCheck
 	@BeforeClass
 	public static void setUp()
 	{
+		// Registering the JSSE and BouncyCastle providers
+		Security.addProvider(new Provider());
 		Security.addProvider(new BouncyCastleProvider());
 	}
 	
+	/**
+	 * "TO DO"
+	 */
 	@Test
 	public void testThatTrustedCertificateIsTrusted()
 	{

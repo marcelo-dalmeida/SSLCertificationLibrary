@@ -50,8 +50,6 @@ public class SSLLocalHostCheck
 	@BeforeClass
 	public static void setUp()
 	{	
-		//SSLServer.run();
-	
 		try 
 		{
 			Thread.sleep(5000);
@@ -65,8 +63,10 @@ public class SSLLocalHostCheck
 
 		//Create an SSLContext that lets anything through:
 	
-		String serverName = "localhost"; // SSL Server Name
-		int sslPort = 4443; // Port where the SSL Server is listening
+		// SSL Server Name
+		String serverName = "localhost"; 
+		// Port where the SSL Server is listening
+		int sslPort = 4443; 
 		
 		SSLContext sslContext = null;
 		try {
@@ -104,7 +104,7 @@ public class SSLLocalHostCheck
 	
 		//Create a socket, connect and start the handshake explicitly (since you're not really going to read form it):
 	
-		// Registering the JSSE (and BouncyCastle) provider
+		// Registering the JSSE and BouncyCastle providers
 		Security.addProvider(new Provider());
 		Security.addProvider(new BouncyCastleProvider());
 		
@@ -160,6 +160,9 @@ public class SSLLocalHostCheck
 		
 	}
 	
+	/**
+	 * "TO DO"
+	 */
 	@Test
 	public void testThatCertificateIsValid()
 	{	
@@ -177,6 +180,9 @@ public class SSLLocalHostCheck
 		}
 	}
 	
+	/**
+	 * "TO DO"
+	 */
 	@Test
 	public void testThatCertificateIsSelfSigned()
 	{

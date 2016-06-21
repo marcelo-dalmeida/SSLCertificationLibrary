@@ -1,10 +1,11 @@
 package sslCertificationLibrary.verifier;
 
 /**
+ * @author Svetlin Nakov
+ *  
  * This class wraps an exception that could be thrown during
  * the certificate verification process.
- * 
- * @author Svetlin Nakov
+ *
  */
 public class CertificateVerificationException extends Exception 
 {
